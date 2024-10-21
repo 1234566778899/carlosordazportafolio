@@ -83,7 +83,7 @@ export const HomeApp = () => {
                     <br />
                     <div className='contents'>
                         <div className="box">
-                            <h6>2023 agosto - Actual</h6>
+                            <h6>2023 agosto - 2024 Agosto</h6>
                             <h6 className='main'>Practicante de TI en ACOMO</h6>
                             <ul>
                                 <li>Desarrollo y mantenimiento de las aplicaciones de la empresa</li>
@@ -348,7 +348,7 @@ export const HomeApp = () => {
                     <i className="fa-brands fa-github"></i>
                     <i className="fa-solid fa-square-envelope"></i>
                 </div>
-                <p>Ultima actualización 01/02/2024</p>
+                <p>Ultima actualización 21/10/2024</p>
                 <p><span style={{ fontSize: '0.8rem' }}>made by</span> Carlos Ordaz</p>
             </footer>
         </div>
