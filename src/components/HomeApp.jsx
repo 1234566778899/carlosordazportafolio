@@ -57,6 +57,16 @@ export const HomeApp = () => {
                     <br />
                     <div className='contents'>
                         <div className="box">
+                            <h6>Septiembre 2025 - Actualidad</h6>
+                            <h6 className='main'>Desarrollador de Software Front-End - CORSUSA INTERNATIONAL S.A.C.</h6>
+                            <ul>
+                                <li>Desarrollo de interfaces de usuario con React.js y TypeScript</li>
+                                <li>Implementación de componentes reutilizables y escalables</li>
+                                <li>Optimización de rendimiento y experiencia de usuario</li>
+                                <li>Colaboración con equipos multidisciplinarios en metodologías ágiles</li>
+                            </ul>
+                        </div>
+                        <div className="box">
                             <h6>Agosto 2023 - Julio 2025</h6>
                             <h6 className='main'>Practicante de TI - ACOMO Negocios Financieros S.A.C.</h6>
                             <ul>
@@ -390,7 +400,7 @@ export const HomeApp = () => {
                         <i className="fa-solid fa-square-envelope"></i>
                     </a>
                 </div>
-                <p>Última actualización: Julio 2025</p>
+                <p>Última actualización: Octubre 2025</p>
                 <p><span style={{ fontSize: '0.8rem' }}>Desarrollado con React.js por</span> Carlos Ordaz</p>
             </footer>
         </div>
