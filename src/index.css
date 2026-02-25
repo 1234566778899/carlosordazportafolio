@@ -1,11 +1,19 @@
 body {
   margin: 0;
-  font-family: 'Onest', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Onest', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #06060e;
+  color: #e8e8f0;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }

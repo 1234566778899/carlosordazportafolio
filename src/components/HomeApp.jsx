@@ -1,407 +1,603 @@
-import React from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import '../styles/Home.css'
+
+/* ─── Three.js 3D Scene ─── */
+const ThreeScene = () => {
+    const mountRef = useRef(null)
+
+    useEffect(() => {
+        let THREE
+        let renderer, scene, camera, frameId
+        let icosahedron, torus, octahedron
+        let particles
+        let mouse = { x: 0, y: 0 }
+
+        const init = async () => {
+            THREE = await import('three')
+
+            const width = mountRef.current.clientWidth
+            const height = mountRef.current.clientHeight
+
+            scene = new THREE.Scene()
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
+            camera.position.z = 30
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+            renderer.setSize(width, height)
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+            renderer.setClearColor(0x000000, 0)
+            mountRef.current.appendChild(renderer.domElement)
+
+            /* Main Icosahedron */
+            const icoGeo = new THREE.IcosahedronGeometry(8, 1)
+            const icoMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.25,
+            })
+            icosahedron = new THREE.Mesh(icoGeo, icoMat)
+            scene.add(icosahedron)
+
+            /* Torus */
+            const torusGeo = new THREE.TorusGeometry(12, 0.3, 16, 100)
+            const torusMat = new THREE.MeshBasicMaterial({
+                color: 0x8b5cf6,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.2,
+            })
+            torus = new THREE.Mesh(torusGeo, torusMat)
+            torus.rotation.x = Math.PI / 3
+            scene.add(torus)
+
+            /* Octahedron */
+            const octGeo = new THREE.OctahedronGeometry(4, 0)
+            const octMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15,
+            })
+            octahedron = new THREE.Mesh(octGeo, octMat)
+            octahedron.position.set(10, -5, -5)
+            scene.add(octahedron)
+
+            /* Particles */
+            const particleCount = 600
+            const positions = new Float32Array(particleCount * 3)
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 80
+            }
+            const particleGeo = new THREE.BufferGeometry()
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+            const particleMat = new THREE.PointsMaterial({
+                color: 0x00f0ff,
+                size: 0.08,
+                transparent: true,
+                opacity: 0.6,
+            })
+            particles = new THREE.Points(particleGeo, particleMat)
+            scene.add(particles)
+
+            animate()
+        }
+
+        const animate = () => {
+            frameId = requestAnimationFrame(animate)
+
+            const time = Date.now() * 0.001
+
+            if (icosahedron) {
+                icosahedron.rotation.x = time * 0.15 + mouse.y * 0.3
+                icosahedron.rotation.y = time * 0.2 + mouse.x * 0.3
+            }
+            if (torus) {
+                torus.rotation.z = time * 0.1
+                torus.rotation.y = time * 0.05 + mouse.x * 0.1
+            }
+            if (octahedron) {
+                octahedron.rotation.x = time * 0.3
+                octahedron.rotation.y = time * 0.4
+                octahedron.position.y = Math.sin(time) * 3 - 5
+            }
+            if (particles) {
+                particles.rotation.y = time * 0.02
+                particles.rotation.x = time * 0.01
+            }
+
+            renderer.render(scene, camera)
+        }
+
+        const onMouseMove = (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1
+        }
+
+        const onResize = () => {
+            if (!mountRef.current || !camera || !renderer) return
+            const w = mountRef.current.clientWidth
+            const h = mountRef.current.clientHeight
+            camera.aspect = w / h
+            camera.updateProjectionMatrix()
+            renderer.setSize(w, h)
+        }
+
+        init()
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('resize', onResize)
+
+        return () => {
+            cancelAnimationFrame(frameId)
+            window.removeEventListener('mousemove', onMouseMove)
+            window.removeEventListener('resize', onResize)
+            if (renderer && mountRef.current) {
+                mountRef.current.removeChild(renderer.domElement)
+                renderer.dispose()
+            }
+        }
+    }, [])
+
+    return <div ref={mountRef} className="three-canvas" />
+}
+
+/* ─── Scroll Reveal Hook ─── */
+const useReveal = () => {
+    const ref = useRef(null)
+    const [visible, setVisible] = useState(false)
+
+    useEffect(() => {
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setVisible(true) },
+            { threshold: 0.15 }
+        )
+        if (ref.current) obs.observe(ref.current)
+        return () => obs.disconnect()
+    }, [])
+
+    return [ref, visible]
+}
+
+const RevealSection = ({ children, className = '', delay = 0 }) => {
+    const [ref, visible] = useReveal()
+    return (
+        <div
+            ref={ref}
+            className={`reveal ${visible ? 'revealed' : ''} ${className}`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {children}
+        </div>
+    )
+}
+
+/* ─── Data ─── */
+const experiences = [
+    {
+        period: 'Septiembre 2025 – Actualidad',
+        role: 'Desarrollador Frontend Semi-Senior',
+        company: 'Corsusa International S.A.C.',
+        sector: 'Tecnología de la Información',
+        items: [
+            'Desarrollo y mantenimiento de aplicación web corporativa con Angular y TypeScript, liderando automatización de procesos de ventas, logística, proyectos y servicios.',
+            'Desarrollo de app móvil para gestión de viáticos con tecnología OCR para detección automática de comprobantes.',
+            'Creación de herramientas de automatización con Python (backend) y Tauri (escritorio) para reportes de comisiones.',
+            'Digitalización de procesos críticos de múltiples áreas de la empresa.',
+        ],
+    },
+    {
+        period: 'Agosto 2023 – Septiembre 2025',
+        role: 'Desarrollador Full-Stack Junior',
+        company: 'Acomo Negocios Financieros S.A.C.',
+        sector: 'Sector Financiero / Fintech',
+        items: [
+            'Desarrollo full stack con Angular + TypeScript, Node.js + Express y PostgreSQL para módulos críticos del sistema financiero.',
+            'Administración de infraestructura cloud en AWS: EC2, Lambda y servicios asociados.',
+            'Automatización de alertas SPLAFT para prevención de lavado de activos.',
+            'Integración de BCP Host to Host para procesamiento automatizado de comprobantes de pago.',
+            'Optimización de queries SQL, mejorando rendimiento de consultas críticas.',
+        ],
+    },
+    {
+        period: 'Agosto 2022 – Diciembre 2022',
+        role: 'Tutor de Programación Orientada a Objetos',
+        company: 'Universidad Peruana de Ciencias Aplicadas (UPC)',
+        sector: 'Educación Superior',
+        items: [
+            'Enseñanza de Programación Orientada a Objetos (POO) con C++ a estudiantes de 1er y 2do ciclo.',
+            'Tutoría personalizada enfocada en pensamiento lógico y resolución de problemas.',
+        ],
+    },
+]
+
+const projects = [
+    {
+        name: 'App de Conexión Social',
+        desc: 'Aplicación móvil de descubrimiento social que conecta personas cercanas mediante Bluetooth Low Energy (BLE). Frontend React Native + backend Node.js.',
+        tags: ['React Native', 'Node.js', 'BLE'],
+        link: null,
+        status: 'En desarrollo',
+    },
+    {
+        name: 'FLYFAR',
+        desc: 'Plataforma fullstack de desafíos de programación en tiempo real con arquitectura de microservicios. Soporta +500 usuarios concurrentes.',
+        tags: ['React.js', 'TypeScript', 'Node.js', 'MongoDB', 'AWS'],
+        link: 'https://www.flyfar.website',
+        status: 'Live',
+    },
+    {
+        name: 'WASYPAY',
+        desc: 'MVP fintech con frontend React.js y backend Node.js + TypeScript. Arquitectura de microservicios con contratos inteligentes Near Protocol.',
+        tags: ['React.js', 'Node.js', 'TypeScript', 'Blockchain'],
+        link: 'https://github.com/1234566778899/WASYPAY.git',
+        status: 'Completado',
+    },
+    {
+        name: 'PREGUNTAS ANÓNIMAS',
+        desc: 'Aplicación web completa con APIs RESTful, autenticación JWT, WebSockets en tiempo real y manejo de estado con Redux.',
+        tags: ['React.js', 'TypeScript', 'Node.js', 'Socket.io', 'Redux'],
+        link: 'https://preguntas-anonimas.vercel.app/',
+        status: 'Live',
+    },
+    {
+        name: 'SMARTBUY',
+        desc: 'Aplicación web financiera fullstack que genera planes de pagos con frontend React.js, backend Node.js y MongoDB.',
+        tags: ['React.js', 'Node.js', 'MongoDB', 'Express'],
+        link: 'https://github.com/1234566778899/smartbuy-fronted.git',
+        status: 'Completado',
+    },
+    {
+        name: 'MIDOC VIRTUAL',
+        desc: 'Sistema de gestión de inventario para farmacias. Frontend Angular con backend Java Spring Boot y PostgreSQL.',
+        tags: ['Angular', 'Java Spring Boot', 'PostgreSQL'],
+        link: 'https://github.com/1234566778899/midoc-final-2022-G2.git',
+        status: 'Completado',
+    },
+]
+
+const skillCategories = [
+    {
+        title: 'Frontend',
+        skills: ['Angular', 'React.js', 'React Native', 'TypeScript', 'HTML5', 'CSS3', 'Astro', 'Tauri'],
+    },
+    {
+        title: 'Backend',
+        skills: ['Node.js', 'Express.js', 'Python', 'Java', 'C++'],
+    },
+    {
+        title: 'Bases de Datos',
+        skills: ['MongoDB', 'PostgreSQL', 'SQL Server'],
+    },
+    {
+        title: 'Cloud & DevOps',
+        skills: ['AWS (EC2, Lambda)', 'Microsoft Azure', 'CI/CD', 'Docker'],
+    },
+    {
+        title: 'Móvil',
+        skills: ['React Native', 'OCR', 'Bluetooth LE'],
+    },
+    {
+        title: 'Herramientas',
+        skills: ['Git', 'GitHub', 'Power BI', 'Figma', 'Postman'],
+    },
+]
+
+const certifications = [
+    { name: 'Databases and SQL for Data Science with Python', org: 'IBM', year: '2024' },
+    { name: 'Computación en la Nube: Microsoft Azure', org: 'Microsoft', year: '2023 – 2024' },
+    { name: 'Hackathon Data & Analytics', org: 'UTEC', year: '2024' },
+    { name: 'Data Analytics Power BI – Nivel Avanzado', org: 'Cibertec', year: '2023' },
+]
+
+/* ─── Main Component ─── */
 export const HomeApp = () => {
+    const [activeNav, setActiveNav] = useState('')
+    const [scrolled, setScrolled] = useState(false)
+    const [menuOpen, setMenuOpen] = useState(false)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50)
+
+            const sections = ['about', 'experience', 'projects', 'skills', 'contact']
+            for (const id of sections.reverse()) {
+                const el = document.getElementById(id)
+                if (el && el.getBoundingClientRect().top <= 200) {
+                    setActiveNav(id)
+                    break
+                }
+            }
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    const scrollTo = useCallback((id) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+        setMenuOpen(false)
+    }, [])
 
     return (
-        <div>
-            <header>
-                <nav>
-                    <ul>
-                        <li><a href="#about">Sobre mi</a></li>
-                        <li><a href="#education">Experiencia & Estudios</a></li>
-                        <li><a href="#projects">Proyectos</a></li>
-                        <li><a href="#skills">Conocimientos</a></li>
+        <div className="portfolio">
+            {/* ─── Navigation ─── */}
+            <nav className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
+                <div className="nav__inner">
+                    <a className="nav__logo" href="#hero" onClick={() => scrollTo('hero')}>
+                        {'<CO/>'}
+                    </a>
+                    <button className="nav__toggle" onClick={() => setMenuOpen(!menuOpen)}>
+                        <span className={menuOpen ? 'open' : ''} />
+                    </button>
+                    <ul className={`nav__links ${menuOpen ? 'nav__links--open' : ''}`}>
+                        {[
+                            ['about', 'Sobre mí'],
+                            ['experience', 'Experiencia'],
+                            ['projects', 'Proyectos'],
+                            ['skills', 'Skills'],
+                            ['contact', 'Contacto'],
+                        ].map(([id, label]) => (
+                            <li key={id}>
+                                <a
+                                    className={activeNav === id ? 'active' : ''}
+                                    onClick={() => scrollTo(id)}
+                                >
+                                    {label}
+                                </a>
+                            </li>
+                        ))}
                     </ul>
-                </nav>
-                <h1>Carlos Jesús Ordaz Hoyos</h1>
-                <p>Desarrollador Junior Fullstack | TypeScript • React.js • Node.js</p>
-                <div>
-                    <a className='icon' target='_blank' href="https://www.linkedin.com/in/carlos-jes%C3%BAs-ordaz-hoyos-904576284?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BKFuwo3iORQCvpzWJVBMkUw%3D%3D"><i className="fa-brands fa-linkedin"></i> LinkedIn</a>
-                    <a className='icon' href="https://github.com/1234566778899" target='_blank'><i className="fa-brands fa-github"></i>GitHub</a>
-                    <a className='icon' href="mailto:ordazhoyos2001@gmail.com" target='_blank'><i className="fa-solid fa-square-envelope"></i>ordazhoyos2001@gmail.com</a>
-                    <a className='icon' href="https://carlosordaz.vercel.app/" target='_blank'><i className="fa-solid fa-globe"></i>Portfolio</a>
                 </div>
-                <img src="https://mattfarley.ca/img/mf-avatar.svg" alt="img" />
-            </header>
-            <section id='about'>
-                <h2>SOBRE MI</h2>
-                <br />
-                <p>Soy Carlos Ordaz, Bachiller en Ingeniería de Sistemas de Información con 2 años de experiencia como Desarrollador Fullstack especializado en TypeScript, React.js y Node.js. Mi enfoque se centra en crear aplicaciones web escalables, implementar microservicios robustos y aplicar principios de Clean Architecture. Tengo experiencia comprobada mejorando sistemas en un 25% y reduciendo costos de infraestructura en 30%. Busco constantemente oportunidades para crecer profesionalmente y contribuir con soluciones innovadoras en equipos de desarrollo ágiles.</p>
+            </nav>
+
+            {/* ─── Hero ─── */}
+            <section id="hero" className="hero">
+                <ThreeScene />
+                <div className="hero__content">
+                    <p className="hero__greeting">Hola, soy</p>
+                    <h1 className="hero__name">
+                        Carlos<br />
+                        <span className="hero__name--accent">Ordaz Hoyos</span>
+                    </h1>
+                    <p className="hero__title">
+                        Desarrollador Full Stack&ensp;
+                        <span className="hero__divider">|</span>
+                        &ensp;Angular&ensp;·&ensp;Node.js&ensp;·&ensp;React Native
+                    </p>
+                    <div className="hero__links">
+                        <a href="https://www.linkedin.com/in/carlos-jes%C3%BAs-ordaz-hoyos-904576284" target="_blank" rel="noreferrer" className="hero__link">
+                            LinkedIn
+                        </a>
+                        <a href="https://github.com/1234566778899" target="_blank" rel="noreferrer" className="hero__link">
+                            GitHub
+                        </a>
+                        <a href="mailto:ordazhoyos2001@gmail.com" className="hero__link hero__link--primary">
+                            Contáctame
+                        </a>
+                    </div>
+                </div>
+                <div className="hero__scroll" onClick={() => scrollTo('about')}>
+                    <span>Scroll</span>
+                    <div className="hero__scroll-line" />
+                </div>
             </section>
-            <section id="habilities">
-                <div>
-                    <h2>ESPECIALIDADES</h2>
-                    <div className='skills'>
-                        <div>
-                            <i className="fa-solid fa-code"></i>
-                            <h5 className="title">DESARROLLO FULLSTACK</h5>
-                            <p>Desarrollo completo de aplicaciones web usando React.js, TypeScript y Node.js, desde interfaces responsivas hasta APIs robustas y microservicios escalables.</p>
-                        </div>
-                        <div >
-                            <i className="fa-solid fa-cloud"></i>
-                            <h5 className="title">ARQUITECTURAS EN LA NUBE</h5>
-                            <p>Diseño e implementación de soluciones cloud con AWS, Lambda, API Gateway y EC2, aplicando principios de Clean Architecture y buenas prácticas de DevOps.</p>
-                        </div>
-                        <div >
-                            <i className="fa-solid fa-layer-group"></i>
-                            <h5 className="title">MICROSERVICIOS & APIS</h5>
-                            <p>Construcción de microservicios escalables y APIs RESTful que procesan miles de transacciones diarias, con testing unitario y documentación técnica completa.</p>
-                        </div>
+
+            {/* ─── About ─── */}
+            <section id="about" className="about">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">01 — Sobre mí</span>
+                        <h2 className="section-title">Construyendo el futuro,<br />una línea de código a la vez</h2>
+                    </RevealSection>
+                    <div className="about__grid">
+                        <RevealSection className="about__text" delay={200}>
+                            <p>
+                                Bachiller en Ingeniería de Sistemas de Información con experiencia en desarrollo full stack y soluciones cloud. Especializado en <strong>Angular</strong>, <strong>React.js</strong>, <strong>React Native</strong>, <strong>Node.js</strong>, <strong>TypeScript</strong> y <strong>MongoDB</strong>, con capacidad demostrada para diseñar e implementar aplicaciones móviles, web y de escritorio de alto rendimiento.
+                            </p>
+                            <p>
+                                Experiencia en administración de servicios AWS (EC2, Lambda), automatización de procesos empresariales y desarrollo de APIs RESTful. Orientado a resultados, con habilidades para optimizar rendimiento, integrar sistemas de pago y crear soluciones escalables. Apasionado por la innovación tecnológica y las metodologías ágiles.
+                            </p>
+                        </RevealSection>
+                        <RevealSection className="about__stats" delay={400}>
+                            <div className="stat">
+                                <span className="stat__number">+3</span>
+                                <span className="stat__label">Años de<br />experiencia</span>
+                            </div>
+                            <div className="stat">
+                                <span className="stat__number">+6</span>
+                                <span className="stat__label">Proyectos<br />completados</span>
+                            </div>
+                            <div className="stat">
+                                <span className="stat__number">3</span>
+                                <span className="stat__label">Empresas<br />colaboradas</span>
+                            </div>
+                            <div className="stat">
+                                <span className="stat__number">4</span>
+                                <span className="stat__label">Certificaciones<br />técnicas</span>
+                            </div>
+                        </RevealSection>
                     </div>
                 </div>
             </section>
 
-            <section id="education">
-                <div>
-                    <h3 className='text-center'>EXPERIENCIA PROFESIONAL</h3>
-                    <br />
-                    <div className='contents'>
-                        <div className="box">
-                            <h6>Septiembre 2025 - Actualidad</h6>
-                            <h6 className='main'>Desarrollador de Software Front-End - CORSUSA INTERNATIONAL S.A.C.</h6>
-                            <ul>
-                                <li>Desarrollo de interfaces de usuario con React.js y TypeScript</li>
-                                <li>Implementación de componentes reutilizables y escalables</li>
-                                <li>Optimización de rendimiento y experiencia de usuario</li>
-                                <li>Colaboración con equipos multidisciplinarios en metodologías ágiles</li>
-                            </ul>
-                        </div>
-                        <div className="box">
-                            <h6>Agosto 2023 - Julio 2025</h6>
-                            <h6 className='main'>Practicante de TI - ACOMO Negocios Financieros S.A.C.</h6>
-                            <ul>
-                                <li>Desarrollo fullstack con React.js, TypeScript y Node.js, mejorando eficiencia 25%</li>
-                                <li>Implementación de microservicios y APIs que procesan +1,000 transacciones diarias</li>
-                                <li>Gestión de despliegues AWS (Lambda, API Gateway, EC2), reduciendo costos 30%</li>
-                                <li>Automatización de procesos con Python y IA generativa</li>
-                                <li>Testing unitario con cobertura superior al 85%</li>
-                            </ul>
-                        </div>
-                        <div className="box">
-                            <h6>Agosto 2022 - Agosto 2023</h6>
-                            <h6 className='main'>Tutor de Programación - Universidad Peruana de Ciencias Aplicadas (UPC)</h6>
-                            <ul>
-                                <li>Tutoría personalizada en programación frontend y backend a +50 estudiantes</li>
-                                <li>Enseñanza de fundamentos: HTML, CSS, JavaScript, React.js y Node.js</li>
-                                <li>Desarrollo de habilidades de resolución de problemas técnicos</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3 className='text-center'>EDUCACIÓN & CERTIFICACIONES</h3>
-                    <br />
-                    <div className='contents'>
-                        <div className="box">
-                            <h6>2020 - 2025</h6>
-                            <h6 className='main'>Universidad Peruana de Ciencias Aplicadas (UPC)</h6>
-                            <ul>
-                                <li>Bachiller en Ingeniería de Sistemas de Información</li>
-                                <li>100% de avance académico | Décimo superior</li>
-                            </ul>
-                        </div>
-                        <div className="box">
-                            <h6>2025</h6>
-                            <h6 className='main'>Certificaciones Técnicas</h6>
-                            <ul>
-                                <li>Hacking Ético - CIBERTEC</li>
-                                <li>Databases and SQL for Data Science with Python - IBM</li>
-                                <li>Power BI Avanzado - CIBERTEC</li>
-                            </ul>
-                        </div>
-                        <div className="box">
-                            <h6>2021 - Actual</h6>
-                            <h6 className='main'>Aprendizaje Continuo</h6>
-                            <ul>
-                                <li>Desarrollo con TypeScript, React.js, Node.js, AWS</li>
-                                <li>Microservicios, Clean Architecture, Testing</li>
-                                <li>Plataformas: Udemy, Coursera, Platzi</li>
-                            </ul>
-                        </div>
+            {/* ─── Specialties ─── */}
+            <section className="specialties">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">Lo que hago</span>
+                    </RevealSection>
+                    <div className="specialties__grid">
+                        {[
+                            {
+                                icon: '⚡',
+                                title: 'Desarrollo Full Stack',
+                                desc: 'Aplicaciones web y móviles completas con Angular, React.js, React Native, Node.js y TypeScript. Desde interfaces responsivas hasta APIs robustas.',
+                            },
+                            {
+                                icon: '☁️',
+                                title: 'Cloud & DevOps',
+                                desc: 'Soluciones cloud con AWS (EC2, Lambda), Microsoft Azure, CI/CD pipelines y Docker. Arquitecturas escalables y optimización de costos.',
+                            },
+                            {
+                                icon: '🔧',
+                                title: 'Automatización',
+                                desc: 'Automatización de procesos empresariales con Python, OCR, herramientas de escritorio con Tauri, y sistemas de alertas inteligentes.',
+                            },
+                        ].map((item, i) => (
+                            <RevealSection key={i} className="specialty-card" delay={i * 150}>
+                                <span className="specialty-card__icon">{item.icon}</span>
+                                <h3>{item.title}</h3>
+                                <p>{item.desc}</p>
+                            </RevealSection>
+                        ))}
                     </div>
                 </div>
             </section>
-            <section id="projects">
-                <h2 className='mt-5'>MIS PROYECTOS FULLSTACK</h2>
-                <div className="box">
-                    <div className="project">
-                        <h5>FLYFAR</h5>
-                        <p>Plataforma fullstack de desafíos de programación en tiempo real con arquitectura de microservicios. Soporta +500 usuarios concurrentes.</p>
-                        <div className="tools">
-                            <span>React.js</span>
-                            <span>TypeScript</span>
-                            <span>Node.js</span>
-                            <span>MongoDB</span>
-                            <span>AWS</span>
-                        </div>
-                        <a href="https://www.flyfar.website" target='_blank'>Visitar web</a>
-                    </div>
-                    <div className="project">
-                        <h5>WASYPAY</h5>
-                        <p>MVP fintech con frontend React.js y backend Node.js + TypeScript. Arquitectura de microservicios con contratos inteligentes.</p>
-                        <div className="tools">
-                            <span>React.js</span>
-                            <span>Node.js</span>
-                            <span>TypeScript</span>
-                            <span>Near Protocol</span>
-                            <span>Blockchain</span>
-                        </div>
-                        <a href="https://github.com/1234566778899/WASYPAY.git" target='_blank'>Código fuente</a>
-                    </div>
-                    <div className="project">
-                        <h5>PREGUNTAS ANÓNIMAS</h5>
-                        <p>Aplicación web completa con React.js frontend y Node.js backend. APIs RESTful, autenticación y manejo de estado con Redux.</p>
-                        <div className="tools">
-                            <span>React.js</span>
-                            <span>TypeScript</span>
-                            <span>Node.js</span>
-                            <span>Socket.io</span>
-                            <span>Redux</span>
-                        </div>
-                        <a href="https://preguntas-anonimas.vercel.app/" target='_blank'>Visitar web</a>
-                    </div>
-                    <div className="project">
-                        <h5>SMARTBUY</h5>
-                        <p>Aplicación web financiera fullstack que genera planes de pagos. Frontend React.js con backend Node.js y base de datos MongoDB.</p>
-                        <div className="tools">
-                            <span>React.js</span>
-                            <span>Node.js</span>
-                            <span>MongoDB</span>
-                            <span>Express</span>
-                        </div>
-                        <a href="https://github.com/1234566778899/smartbuy-fronted.git" target='_blank'>Código fuente</a>
-                    </div>
-                    <div className="project">
-                        <h5>MIDOC VIRTUAL</h5>
-                        <p>Sistema de gestión de inventario para farmacias. Frontend Angular con backend Java Spring Boot y base de datos PostgreSQL.</p>
-                        <div className="tools">
-                            <span>Angular</span>
-                            <span>TypeScript</span>
-                            <span>Java Spring Boot</span>
-                            <span>PostgreSQL</span>
-                        </div>
-                        <a href="https://github.com/1234566778899/midoc-final-2022-G2.git" target='_blank'>Código fuente</a>
-                    </div>
-                    <div className="project">
-                        <h5>CALCULADORA MATEMÁTICA</h5>
-                        <p>Aplicación web con HTML5, CSS3 y JavaScript ES6+ implementando componentes modulares y buenas prácticas de frontend.</p>
-                        <div className="tools">
-                            <span>HTML5</span>
-                            <span>CSS3</span>
-                            <span>JavaScript ES6+</span>
-                        </div>
-                        <a href="https://1234566778899.github.io/calcMath" target='_blank'>Visitar web</a>
-                    </div>
-                </div>
-            </section>
-            <section id="skills">
-                <h2 style={{ fontWeight: 'bold', textAlign: 'center' }}>Stack Tecnológico Fullstack</h2>
-                <br />
-                <div className='items'>
-                    <div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>React.js</span>
-                                <span>85%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '85%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>TypeScript</span>
-                                <span>80%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '80%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Node.js</span>
-                                <span>85%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '85%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Express.js</span>
-                                <span>80%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '80%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>JavaScript ES6+</span>
-                                <span>90%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '90%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>HTML5 & CSS3</span>
-                                <span>85%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '85%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Redux Toolkit</span>
-                                <span>75%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '75%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>APIs RESTful</span>
-                                <span>85%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '85%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Microservicios</span>
-                                <span>75%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '75%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Clean Architecture</span>
-                                <span>70%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '70%' }}></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>MongoDB</span>
-                                <span>80%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '80%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>SQL Server</span>
-                                <span>75%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '75%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>AWS (Lambda, EC2, API Gateway)</span>
-                                <span>70%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '70%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Git & GitHub</span>
-                                <span>80%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '80%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Jest & Testing</span>
-                                <span>65%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '65%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Docker & CI/CD</span>
-                                <span>60%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '60%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Angular</span>
-                                <span>70%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '70%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Python</span>
-                                <span>60%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '60%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Postman & VS Code</span>
-                                <span>85%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '85%' }}></div>
-                            </div>
-                        </div>
-                        <div className='item'>
-                            <div className='head'>
-                                <span>Scrum & Metodologías Ágiles</span>
-                                <span>75%</span>
-                            </div>
-                            <div className='toolbar'>
-                                <div className='percent' style={{ width: '75%' }}></div>
-                            </div>
-                        </div>
+
+            {/* ─── Experience ─── */}
+            <section id="experience" className="experience">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">02 — Trayectoria</span>
+                        <h2 className="section-title">Experiencia Profesional</h2>
+                    </RevealSection>
+                    <div className="timeline">
+                        {experiences.map((exp, i) => (
+                            <RevealSection key={i} className="timeline__item" delay={i * 150}>
+                                <div className="timeline__dot" />
+                                <div className="timeline__content">
+                                    <span className="timeline__period">{exp.period}</span>
+                                    <span className="timeline__sector">{exp.sector}</span>
+                                    <h3 className="timeline__role">{exp.role}</h3>
+                                    <h4 className="timeline__company">{exp.company}</h4>
+                                    <ul className="timeline__list">
+                                        {exp.items.map((item, j) => (
+                                            <li key={j}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </RevealSection>
+                        ))}
                     </div>
 
+                    {/* Education */}
+                    <RevealSection>
+                        <h2 className="section-title" style={{ marginTop: '80px' }}>Formación & Certificaciones</h2>
+                    </RevealSection>
+                    <div className="education-grid">
+                        <RevealSection className="edu-card" delay={100}>
+                            <span className="edu-card__year">2020 – 2025</span>
+                            <h3>Universidad Peruana de Ciencias Aplicadas (UPC)</h3>
+                            <p>Bachiller en Ingeniería de Sistemas de Información</p>
+                            <span className="edu-card__badge">Décimo superior · Graduado</span>
+                        </RevealSection>
+                        <RevealSection className="edu-card" delay={250}>
+                            <span className="edu-card__year">Certificaciones</span>
+                            {certifications.map((c, i) => (
+                                <div key={i} className="cert-item">
+                                    <strong>{c.name}</strong>
+                                    <span>{c.org} · {c.year}</span>
+                                </div>
+                            ))}
+                        </RevealSection>
+                    </div>
                 </div>
             </section>
-            <br />
-            <br />
-            <footer>
-                <p style={{ fontSize: '1.5rem' }}>Desarrollando el futuro, una línea de código a la vez.</p>
-                <div className='contacts'>
-                    <a href="https://www.linkedin.com/in/carlos-jes%C3%BAs-ordaz-hoyos-904576284" target="_blank" rel="noopener noreferrer">
-                        <i className="fa-brands fa-linkedin"></i>
-                    </a>
-                    <a href="https://github.com/1234566778899" target="_blank" rel="noopener noreferrer">
-                        <i className="fa-brands fa-github"></i>
-                    </a>
-                    <a href="mailto:ordazhoyos2001@gmail.com">
-                        <i className="fa-solid fa-square-envelope"></i>
-                    </a>
+
+            {/* ─── Projects ─── */}
+            <section id="projects" className="projects">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">03 — Portafolio</span>
+                        <h2 className="section-title">Proyectos Destacados</h2>
+                    </RevealSection>
+                    <div className="projects__grid">
+                        {projects.map((proj, i) => (
+                            <RevealSection key={i} className="project-card" delay={i * 100}>
+                                <div className="project-card__header">
+                                    <h3>{proj.name}</h3>
+                                    <span className={`project-card__status project-card__status--${proj.status === 'Live' ? 'live' : proj.status === 'En desarrollo' ? 'dev' : 'done'}`}>
+                                        {proj.status}
+                                    </span>
+                                </div>
+                                <p>{proj.desc}</p>
+                                <div className="project-card__tags">
+                                    {proj.tags.map((t, j) => (
+                                        <span key={j}>{t}</span>
+                                    ))}
+                                </div>
+                                {proj.link && (
+                                    <a href={proj.link} target="_blank" rel="noreferrer" className="project-card__link">
+                                        {proj.link.includes('github') ? 'Ver código' : 'Visitar sitio'} →
+                                    </a>
+                                )}
+                            </RevealSection>
+                        ))}
+                    </div>
                 </div>
-                <p>Última actualización: Octubre 2025</p>
-                <p><span style={{ fontSize: '0.8rem' }}>Desarrollado con React.js por</span> Carlos Ordaz</p>
+            </section>
+
+            {/* ─── Skills ─── */}
+            <section id="skills" className="skills-section">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">04 — Herramientas</span>
+                        <h2 className="section-title">Stack Tecnológico</h2>
+                    </RevealSection>
+                    <div className="skills__grid">
+                        {skillCategories.map((cat, i) => (
+                            <RevealSection key={i} className="skill-group" delay={i * 100}>
+                                <h3>{cat.title}</h3>
+                                <div className="skill-group__items">
+                                    {cat.skills.map((s, j) => (
+                                        <span key={j} className="skill-chip">{s}</span>
+                                    ))}
+                                </div>
+                            </RevealSection>
+                        ))}
+                    </div>
+                    <RevealSection delay={300}>
+                        <div className="languages-box">
+                            <h3>Idiomas</h3>
+                            <p>Español — Nativo&ensp;·&ensp;Inglés — Intermedio / Avanzado</p>
+                        </div>
+                    </RevealSection>
+                </div>
+            </section>
+
+            {/* ─── Contact ─── */}
+            <section id="contact" className="contact">
+                <div className="container">
+                    <RevealSection>
+                        <span className="section-tag">05 — Contacto</span>
+                        <h2 className="section-title contact__title">¿Trabajamos juntos?</h2>
+                        <p className="contact__subtitle">
+                            Siempre estoy abierto a nuevas oportunidades y proyectos interesantes.
+                        </p>
+                    </RevealSection>
+                    <RevealSection delay={200}>
+                        <div className="contact__links">
+                            <a href="mailto:ordazhoyos2001@gmail.com" className="contact__btn">
+                                ordazhoyos2001@gmail.com
+                            </a>
+                            <a href="tel:+51904435631" className="contact__btn contact__btn--outline">
+                                +51 904 435 631
+                            </a>
+                        </div>
+                        <div className="contact__socials">
+                            <a href="https://www.linkedin.com/in/carlos-jes%C3%BAs-ordaz-hoyos-904576284" target="_blank" rel="noreferrer">LinkedIn</a>
+                            <a href="https://github.com/1234566778899" target="_blank" rel="noreferrer">GitHub</a>
+                            <a href="https://carlosordaz.vercel.app/" target="_blank" rel="noreferrer">Portfolio</a>
+                        </div>
+                    </RevealSection>
+                </div>
+            </section>
+
+            {/* ─── Footer ─── */}
+            <footer className="footer">
+                <div className="container footer__inner">
+                    <span className="footer__logo">{'<CO/>'}</span>
+                    <p>Diseñado y desarrollado por Carlos Ordaz · 2025</p>
+                </div>
             </footer>
         </div>
     )
