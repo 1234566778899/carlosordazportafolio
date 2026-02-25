@@ -6,6 +6,7 @@ const ThreeScene = () => {
     const mountRef = useRef(null)
 
     useEffect(() => {
+        const currentMount = mountRef.current
         let THREE
         let renderer, scene, camera, frameId
         let icosahedron, torus, octahedron
@@ -15,8 +16,10 @@ const ThreeScene = () => {
         const init = async () => {
             THREE = await import('three')
 
-            const width = mountRef.current.clientWidth
-            const height = mountRef.current.clientHeight
+            if (!currentMount) return
+
+            const width = currentMount.clientWidth
+            const height = currentMount.clientHeight
 
             scene = new THREE.Scene()
             camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
@@ -26,7 +29,7 @@ const ThreeScene = () => {
             renderer.setSize(width, height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
             renderer.setClearColor(0x000000, 0)
-            mountRef.current.appendChild(renderer.domElement)
+            currentMount.appendChild(renderer.domElement)
 
             /* Main Icosahedron */
             const icoGeo = new THREE.IcosahedronGeometry(8, 1)
@@ -106,7 +109,9 @@ const ThreeScene = () => {
                 particles.rotation.x = time * 0.01
             }
 
-            renderer.render(scene, camera)
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera)
+            }
         }
 
         const onMouseMove = (e) => {
@@ -115,9 +120,9 @@ const ThreeScene = () => {
         }
 
         const onResize = () => {
-            if (!mountRef.current || !camera || !renderer) return
-            const w = mountRef.current.clientWidth
-            const h = mountRef.current.clientHeight
+            if (!currentMount || !camera || !renderer) return
+            const w = currentMount.clientWidth
+            const h = currentMount.clientHeight
             camera.aspect = w / h
             camera.updateProjectionMatrix()
             renderer.setSize(w, h)
@@ -131,8 +136,8 @@ const ThreeScene = () => {
             cancelAnimationFrame(frameId)
             window.removeEventListener('mousemove', onMouseMove)
             window.removeEventListener('resize', onResize)
-            if (renderer && mountRef.current) {
-                mountRef.current.removeChild(renderer.domElement)
+            if (renderer && currentMount) {
+                currentMount.removeChild(renderer.domElement)
                 renderer.dispose()
             }
         }
@@ -147,12 +152,13 @@ const useReveal = () => {
     const [visible, setVisible] = useState(false)
 
     useEffect(() => {
+        const current = ref.current
         const obs = new IntersectionObserver(
             ([entry]) => { if (entry.isIntersecting) setVisible(true) },
             { threshold: 0.15 }
         )
-        if (ref.current) obs.observe(ref.current)
-        return () => obs.disconnect()
+        if (current) obs.observe(current)
+        return () => { if (current) obs.unobserve(current) }
     }, [])
 
     return [ref, visible]
@@ -300,7 +306,8 @@ export const HomeApp = () => {
             setScrolled(window.scrollY > 50)
 
             const sections = ['about', 'experience', 'projects', 'skills', 'contact']
-            for (const id of sections.reverse()) {
+            const reversed = [...sections].reverse()
+            for (const id of reversed) {
                 const el = document.getElementById(id)
                 if (el && el.getBoundingClientRect().top <= 200) {
                     setActiveNav(id)
@@ -322,10 +329,10 @@ export const HomeApp = () => {
             {/* ─── Navigation ─── */}
             <nav className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
                 <div className="nav__inner">
-                    <a className="nav__logo" href="#hero" onClick={() => scrollTo('hero')}>
+                    <a className="nav__logo" href="#hero" onClick={(e) => { e.preventDefault(); scrollTo('hero'); }}>
                         {'<CO/>'}
                     </a>
-                    <button className="nav__toggle" onClick={() => setMenuOpen(!menuOpen)}>
+                    <button className="nav__toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
                         <span className={menuOpen ? 'open' : ''} />
                     </button>
                     <ul className={`nav__links ${menuOpen ? 'nav__links--open' : ''}`}>
@@ -338,8 +345,9 @@ export const HomeApp = () => {
                         ].map(([id, label]) => (
                             <li key={id}>
                                 <a
+                                    href={`#${id}`}
                                     className={activeNav === id ? 'active' : ''}
-                                    onClick={() => scrollTo(id)}
+                                    onClick={(e) => { e.preventDefault(); scrollTo(id); }}
                                 >
                                     {label}
                                 </a>
@@ -375,7 +383,7 @@ export const HomeApp = () => {
                         </a>
                     </div>
                 </div>
-                <div className="hero__scroll" onClick={() => scrollTo('about')}>
+                <div className="hero__scroll" onClick={() => scrollTo('about')} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') scrollTo('about'); }}>
                     <span>Scroll</span>
                     <div className="hero__scroll-line" />
                 </div>
