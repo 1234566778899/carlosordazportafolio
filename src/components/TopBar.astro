@@ -1,0 +1,22 @@
+---
+import { NAV, PROFILE } from '../data/portfolio';
+---
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;font-weight:500">
+      <span class="hl">$</span>
+      <span>{PROFILE.handle.split('-').slice(0, 2).join('.')}</span>
+      <span class="muted" style="font-weight:400">~/portfolio</span>
+    </a>
+    <nav aria-label="Secciones">
+      {NAV.map((n) => (
+        <a href={`#${n.id}`}>{n.label}</a>
+      ))}
+    </nav>
+    <span class="status">
+      <span class="dot" />
+      disponible
+    </span>
+  </div>
+</div>

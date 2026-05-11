@@ -1,0 +1,73 @@
+---
+import { PROFILE } from '../data/portfolio';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  type?: 'website' | 'profile';
+  noindex?: boolean;
+}
+
+const {
+  title = `${PROFILE.name} — ${PROFILE.role}`,
+  description = PROFILE.intro.slice(0, 160),
+  image = '/og-image.png',
+  canonical = Astro.url.href,
+  type = 'website',
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = 'https://carlosordaz.vercel.app';
+const absoluteImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
+---
+
+<!-- Sitemap -->
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+<!-- Primary meta -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="author" content={PROFILE.name} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex,nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={absoluteImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="es_PE" />
+<meta property="og:site_name" content={PROFILE.name} />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteImage} />
+
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": PROFILE.name,
+  "jobTitle": PROFILE.role,
+  "description": description,
+  "url": siteUrl,
+  "email": PROFILE.email,
+  "telephone": PROFILE.phone,
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Lima",
+    "addressCountry": "PE"
+  },
+  "sameAs": [
+    `https://${PROFILE.linkedin}`,
+    `https://${PROFILE.github}`,
+  ],
+  "knowsAbout": ["React", "Next.js", "TypeScript", "Node.js", "AWS", "Docker", "PostgreSQL"],
+})} />

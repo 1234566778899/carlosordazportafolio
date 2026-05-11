@@ -1,0 +1,46 @@
+---
+import { PROFILE } from '../data/portfolio';
+
+const btnPrimary = `display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:1px solid var(--accent);color:#0a0a0a;background:var(--accent);font-weight:500;letter-spacing:.02em;font-size:12px;`;
+const btnGhost = `display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:1px solid var(--line-hi);color:var(--fg);background:transparent;font-size:12px;`;
+---
+
+<!-- Terminal hero (default) -->
+<section id="top" style="padding-top:56px;border-top:0" data-screen-label="hero">
+  <div style="font-size:12px;color:var(--dim);margin-bottom:18px">
+    <span class="hl">carlos@dev</span>
+    <span> : ~/portfolio </span>
+    <span class="hl">$</span> whoami
+  </div>
+
+  <h1 style="margin:0;font-size:clamp(40px,9vw,140px);line-height:.92;letter-spacing:-.04em;font-weight:500">
+    Carlos<br/>
+    Ordaz<br/>
+    Hoyos<span class="hl">.</span>
+  </h1>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:56px;padding-top:28px;border-top:1px solid var(--line);font-size:12px;">
+    <div>
+      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">role</div>
+      <div style="color:var(--fg);font-size:14px">{PROFILE.role}</div>
+    </div>
+    <div>
+      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">currently</div>
+      <div class="hl" style="font-size:14px">{PROFILE.level} @ {PROFILE.company}</div>
+    </div>
+    <div>
+      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">location</div>
+      <div style="color:var(--fg);font-size:14px">{PROFILE.location}</div>
+    </div>
+    <div>
+      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">experience</div>
+      <div style="color:var(--fg);font-size:14px">{PROFILE.years} años</div>
+    </div>
+  </div>
+
+  <div style="margin-top:40px;display:flex;gap:16px;flex-wrap:wrap">
+    <a href="#contacto" style={btnPrimary}>contactar →</a>
+    <a href="#proyectos" style={btnGhost}>ver proyectos</a>
+    <a href={`https://${PROFILE.github}`} target="_blank" rel="noopener noreferrer" style={btnGhost}>github ↗</a>
+  </div>
+</section>

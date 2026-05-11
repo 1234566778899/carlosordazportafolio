@@ -1,0 +1,48 @@
+---
+import { PROFILE, STATS } from '../data/portfolio';
+---
+
+<section id="sobre-mi" data-screen-label="01 Sobre mí">
+  <header class="sec-head">
+    <div>
+      <div class="sec-tag"><b>01</b>/ sobre-mi.md</div>
+      <h2 class="sec-title">Sobre <em>mí</em></h2>
+    </div>
+    <div class="sec-meta">
+      last-updated · 2026.05<br/>
+      status · {PROFILE.status}
+    </div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:64px" class="aboutgrid">
+    <p style="margin:0;font-size:clamp(16px,1.6vw,20px);line-height:1.65;color:#dcdcdc;max-width:62ch">
+      {PROFILE.intro}
+    </p>
+    <div style="border-left:1px solid var(--line);padding-left:24px;font-size:12px;color:var(--dim)">
+      {[
+        { k: 'nombre',    v: PROFILE.name },
+        { k: 'rol',       v: PROFILE.role },
+        { k: 'empresa',   v: PROFILE.company, accent: true },
+        { k: 'nivel',     v: PROFILE.level },
+        { k: 'ubicación', v: PROFILE.location },
+        { k: 'idiomas',   v: 'español (nativo) · inglés (C1)' },
+        { k: 'zona',      v: 'GMT-5 · Lima' },
+      ].map(({ k, v, accent }) => (
+        <div style="display:flex;padding:6px 0;border-bottom:1px dashed var(--line)">
+          <span style="width:96px;color:var(--dim)">{k}</span>
+          <span style={accent ? 'color:var(--accent)' : 'color:var(--fg)'}>{v}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div style="margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line)" class="statsgrid">
+    {STATS.map((s, i) => (
+      <div style={`padding:28px 24px;${i < STATS.length - 1 ? 'border-right:1px solid var(--line);' : ''}background:#0c0c0c`}>
+        <div style="font-size:clamp(36px,4.5vw,56px);line-height:1;color:var(--accent);font-weight:500;letter-spacing:-.03em">{s.v}</div>
+        <div style="margin-top:12px;color:var(--fg);font-size:13px">{s.k}</div>
+        <div style="margin-top:4px;color:var(--dim);font-size:11px">{s.note}</div>
+      </div>
+    ))}
+  </div>
+</section>

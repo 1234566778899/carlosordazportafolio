@@ -1,0 +1,31 @@
+---
+import { SPECIALTIES } from '../data/portfolio';
+---
+
+<section id="especialidades" data-screen-label="02 Especialidades">
+  <header class="sec-head">
+    <div>
+      <div class="sec-tag"><b>02</b>/ especialidades.md</div>
+      <h2 class="sec-title">3 especialidades<em>.</em></h2>
+    </div>
+    <div class="sec-meta">lo que hago</div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line)" class="speclist">
+    {SPECIALTIES.map((s, i) => (
+      <article style={`padding:36px 28px;${i < SPECIALTIES.length - 1 ? 'border-right:1px solid var(--line);' : ''}background:#0c0c0c;display:flex;flex-direction:column;gap:14px`}>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;color:var(--dim);font-size:11px">
+          <span style="color:var(--accent);font-weight:500">/{s.no}</span>
+          <span>specialty</span>
+        </div>
+        <h3 style="margin:0;font-size:clamp(22px,2.4vw,32px);font-weight:500;letter-spacing:-.01em">{s.title}</h3>
+        <p style="margin:0;color:#cfcfcf;font-size:13px;line-height:1.6">{s.blurb}</p>
+        <div style="margin-top:auto;padding-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          {s.keywords.map((kw) => (
+            <span style="font-size:11px;color:var(--dim);border:1px solid var(--line-hi);padding:3px 8px">{kw}</span>
+          ))}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>

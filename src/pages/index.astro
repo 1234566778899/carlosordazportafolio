@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import TopBar from '../components/TopBar.astro';
+import Hero from '../components/Hero.astro';
+import SobreMi from '../components/SobreMi.astro';
+import Especialidades from '../components/Especialidades.astro';
+import Trayectoria from '../components/Trayectoria.astro';
+import Educacion from '../components/Educacion.astro';
+import Proyectos from '../components/Proyectos';
+import Stack from '../components/Stack.astro';
+import Contacto from '../components/Contacto.astro';
+import { PROFILE } from '../data/portfolio';
+
+const buildDate = new Date().toISOString().slice(0, 10);
+---
+
+<Base
+  title={`${PROFILE.name} — ${PROFILE.role}`}
+  description={`Desarrollador peruano con ${PROFILE.years} años construyendo productos web de extremo a extremo. React, Next.js, Node, AWS. Disponible para proyectos.`}
+>
+  <TopBar />
+
+  <main class="shell">
+    <Hero />
+    <SobreMi />
+    <Especialidades />
+    <Trayectoria />
+    <Educacion />
+    <Proyectos client:load layout="index" />
+    <Stack />
+    <Contacto />
+
+    <footer class="foot">
+      <span>© 2026 {PROFILE.name} · diseñado y construido a mano</span>
+      <span>v1.0 · last build {buildDate}</span>
+    </footer>
+  </main>
+</Base>
