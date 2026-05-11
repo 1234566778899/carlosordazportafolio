@@ -22,8 +22,8 @@ export const PROFILE = {
 export const STATS = [
   { v: "3+", k: "años de experiencia", note: "desde 2022" },
   { v: "6+", k: "proyectos personales", note: "open source / privados" },
-  { v: "3",  k: "empresas",            note: "Corsusa · Acomo · UPC" },
-  { v: "4",  k: "certificaciones",     note: "IBM · MS · UTEC · Cibertec" },
+  { v: "3", k: "empresas", note: "Corsusa · Acomo · UPC" },
+  { v: "4", k: "certificaciones", note: "IBM · MS · UTEC · Cibertec" },
 ];
 
 export const SPECIALTIES = [
@@ -100,15 +100,15 @@ export const TIMELINE = [
 export const EDUCATION = {
   degree: {
     school: "Universidad Peruana de Ciencias Aplicadas (UPC)",
-    title: "Ingeniería de Software",
+    title: "Ingeniería de Sistemas de Información",
     range: "2020 — 2025",
     note: "Tesis: arquitecturas event-driven aplicadas a fintech",
   },
   certs: [
-    { issuer: "IBM",       title: "Full Stack Software Developer",  year: "2024", code: "IBM-FS24" },
-    { issuer: "Microsoft", title: "Azure Fundamentals (AZ-900)",    year: "2023", code: "AZ-900" },
-    { issuer: "UTEC",      title: "Cloud Computing & DevOps",       year: "2023", code: "UTEC-CD23" },
-    { issuer: "Cibertec",  title: "Desarrollo Móvil con Flutter",   year: "2022", code: "CTC-FLT" },
+    { issuer: "IBM", title: "Full Stack Software Developer", year: "2024", code: "IBM-FS24" },
+    { issuer: "Microsoft", title: "Azure Fundamentals (AZ-900)", year: "2023", code: "AZ-900" },
+    { issuer: "UTEC", title: "Cloud Computing & DevOps", year: "2023", code: "UTEC-CD23" },
+    { issuer: "Cibertec", title: "Desarrollo Móvil con Flutter", year: "2022", code: "CTC-FLT" },
   ],
 };
 
@@ -215,10 +215,10 @@ export const STACK = [
 ];
 
 export const NAV = [
-  { id: "sobre-mi",    label: "sobre-mi" },
+  { id: "sobre-mi", label: "sobre-mi" },
   { id: "trayectoria", label: "trayectoria" },
-  { id: "educacion",   label: "educacion" },
-  { id: "proyectos",   label: "proyectos" },
-  { id: "stack",       label: "stack" },
-  { id: "contacto",    label: "contacto" },
+  { id: "educacion", label: "educacion" },
+  { id: "proyectos", label: "proyectos" },
+  { id: "stack", label: "stack" },
+  { id: "contacto", label: "contacto" },
 ];
