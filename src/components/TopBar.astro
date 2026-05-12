@@ -4,19 +4,130 @@ import { NAV, PROFILE } from '../data/portfolio';
 
 <div class="topbar">
   <div class="topbar-inner">
-    <a href="#top" style="display:flex;align-items:center;gap:10px;font-weight:500">
+    <a href="#top" class="topbar-brand">
       <span class="hl">$</span>
-      <span>{PROFILE.handle.split('-').slice(0, 2).join('.')}</span>
-      <span class="muted" style="font-weight:400">~/portfolio</span>
+      <span>carlos.ordaz</span>
+      <span class="muted">~/portfolio</span>
     </a>
     <nav aria-label="Secciones">
       {NAV.map((n) => (
         <a href={`#${n.id}`}>{n.label}</a>
       ))}
     </nav>
-    <span class="status">
-      <span class="dot" />
-      disponible
-    </span>
+    <div class="topbar-right">
+      <span class="status">
+        <span class="dot" />
+        disponible
+      </span>
+      <button class="burger" id="burger-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+    {NAV.map((n) => (
+      <a href={`#${n.id}`} class="mobile-nav-link">{n.label}</a>
+    ))}
+    <div class="mobile-nav-footer">
+      <span class="dot" style="flex-shrink:0" />
+      <span>{PROFILE.status}</span>
+    </div>
   </div>
 </div>
+
+<script>
+  const btn = document.getElementById('burger-btn');
+  const nav = document.getElementById('mobile-nav');
+
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    nav?.setAttribute('aria-hidden', String(open));
+    nav?.classList.toggle('open', !open);
+  });
+
+  nav?.querySelectorAll('.mobile-nav-link').forEach(a => {
+    a.addEventListener('click', () => {
+      btn?.setAttribute('aria-expanded', 'false');
+      nav.setAttribute('aria-hidden', 'true');
+      nav.classList.remove('open');
+    });
+  });
+</script>
+
+<style>
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* ── hamburger ── */
+  .burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .burger span {
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: var(--fg);
+    transition: transform .2s, opacity .2s;
+    transform-origin: center;
+  }
+  .burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /* ── mobile nav drawer ── */
+  .mobile-nav {
+    display: none;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+    padding: 4px 0 8px;
+  }
+  .mobile-nav.open { display: flex; }
+
+  .mobile-nav-link {
+    padding: 13px var(--pad-x);
+    color: var(--dim);
+    font-size: 13px;
+    letter-spacing: .06em;
+    border-bottom: 1px solid var(--line);
+    transition: color .15s, background .15s;
+  }
+  .mobile-nav-link:last-of-type { border-bottom: 0; }
+  .mobile-nav-link:hover { color: var(--fg); background: rgba(255,255,255,.03); }
+
+  .mobile-nav-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px var(--pad-x) 4px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  @media (max-width: 760px) {
+    .burger  { display: flex; }
+    .status  { display: none; }
+  }
+</style>

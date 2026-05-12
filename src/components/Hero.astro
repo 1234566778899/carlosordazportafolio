@@ -1,46 +1,124 @@
 ---
 import { PROFILE } from '../data/portfolio';
-
-const btnPrimary = `display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:1px solid var(--accent);color:#0a0a0a;background:var(--accent);font-weight:500;letter-spacing:.02em;font-size:12px;`;
-const btnGhost = `display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:1px solid var(--line-hi);color:var(--fg);background:transparent;font-size:12px;`;
 ---
 
-<!-- Terminal hero (default) -->
-<section id="top" style="padding-top:56px;border-top:0" data-screen-label="hero">
-  <div style="font-size:12px;color:var(--dim);margin-bottom:18px">
+<section id="top" class="hero" data-screen-label="hero">
+  <div class="hero-prompt">
     <span class="hl">carlos@dev</span>
     <span> : ~/portfolio </span>
     <span class="hl">$</span> whoami
   </div>
 
-  <h1 style="margin:0;font-size:clamp(40px,9vw,140px);line-height:.92;letter-spacing:-.04em;font-weight:500">
+  <h1 class="hero-name">
     Carlos<br/>
     Ordaz<br/>
     Hoyos<span class="hl">.</span>
   </h1>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:56px;padding-top:28px;border-top:1px solid var(--line);font-size:12px;">
-    <div>
-      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">role</div>
-      <div style="color:var(--fg);font-size:14px">{PROFILE.role}</div>
+  <div class="hero-facts">
+    <div class="fact">
+      <div class="fact-k">role</div>
+      <div class="fact-v">{PROFILE.role}</div>
     </div>
-    <div>
-      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">currently</div>
-      <div class="hl" style="font-size:14px">{PROFILE.level} @ {PROFILE.company}</div>
+    <div class="fact">
+      <div class="fact-k">currently</div>
+      <div class="fact-v hl">{PROFILE.level} @ {PROFILE.company}</div>
     </div>
-    <div>
-      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">location</div>
-      <div style="color:var(--fg);font-size:14px">{PROFILE.location}</div>
+    <div class="fact">
+      <div class="fact-k">location</div>
+      <div class="fact-v">{PROFILE.location}</div>
     </div>
-    <div>
-      <div style="color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">experience</div>
-      <div style="color:var(--fg);font-size:14px">{PROFILE.years} años</div>
+    <div class="fact">
+      <div class="fact-k">experience</div>
+      <div class="fact-v">{PROFILE.years} años</div>
     </div>
   </div>
 
-  <div style="margin-top:40px;display:flex;gap:16px;flex-wrap:wrap">
-    <a href="#contacto" style={btnPrimary}>contactar →</a>
-    <a href="#proyectos" style={btnGhost}>ver proyectos</a>
-    <a href={`https://${PROFILE.github}`} target="_blank" rel="noopener noreferrer" style={btnGhost}>github ↗</a>
+  <div class="hero-cta">
+    <a href="#contacto" class="btn-primary">contactar →</a>
+    <a href="#proyectos" class="btn-ghost">ver proyectos</a>
+    <a href={`https://${PROFILE.github}`} target="_blank" rel="noopener noreferrer" class="btn-ghost">github ↗</a>
   </div>
 </section>
+
+<style>
+  .hero {
+    padding-top: clamp(36px, 6vw, 56px);
+    border-top: 0 !important;
+  }
+
+  .hero-prompt {
+    font-size: 12px;
+    color: var(--dim);
+    margin-bottom: 18px;
+  }
+
+  .hero-name {
+    margin: 0;
+    font-size: clamp(40px, 10vw, 140px);
+    line-height: .92;
+    letter-spacing: -.04em;
+    font-weight: 500;
+    word-break: break-word;
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    margin-top: clamp(32px, 5vw, 56px);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .fact-k {
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .fact-v { font-size: 14px; color: var(--fg); }
+
+  .hero-cta {
+    margin-top: clamp(24px, 4vw, 40px);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: 1px solid var(--accent);
+    color: #0a0a0a;
+    background: var(--accent);
+    font-weight: 500;
+    letter-spacing: .02em;
+    transition: opacity .15s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { opacity: .88; }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: 1px solid var(--line-hi);
+    color: var(--fg);
+    background: transparent;
+    transition: border-color .15s;
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { border-color: var(--dim); }
+
+  @media (max-width: 480px) {
+    .hero-cta { flex-direction: column; }
+    .btn-primary, .btn-ghost { justify-content: center; text-align: center; }
+  }
+</style>
